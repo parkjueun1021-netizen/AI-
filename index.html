@@ -1,0 +1,74 @@
+# AI 윤리 딜레마 설문
+
+Vite + React + Supabase 기반의 익명 AI 윤리 딜레마 설문 및 관리자 통계 대시보드입니다.
+
+## 1. 로컬 실행
+
+```bash
+npm install
+cp .env.example .env
+npm run dev
+```
+
+`.env`에 Supabase URL과 publishable/anon key를 입력합니다. `service_role` 키는 절대 프런트엔드에 넣지 마세요.
+
+## 2. Supabase 설정
+
+1. Supabase 프로젝트 생성
+2. SQL Editor에서 `supabase/schema.sql` 전체 실행
+3. Authentication > Users에서 관리자 계정 생성
+4. 관리자 계정의 `app_metadata`에 다음 값을 설정
+
+```json
+{
+  "role": "admin"
+}
+```
+
+`app_metadata`는 클라이언트에서 임의로 수정할 수 없는 관리자 권한 영역입니다. `user_metadata`에 role을 넣으면 안 됩니다.
+
+5. Project Settings > API에서 Project URL과 publishable/anon key를 `.env`에 입력
+
+관리자 계정은 Supabase Dashboard에서 직접 생성/초대하고, 관리자 권한은 신뢰할 수 있는 서버 측 경로 또는 Supabase Dashboard의 사용자 관리 기능으로 부여하세요.
+
+## 3. 화면
+
+- `/` : 시작
+- `/participant` : 연령·성별 입력
+- `/dilemma/1`, `/dilemma/2`, `/dilemma/3` : 딜레마 응답
+- `/complete` : 제출 완료
+- `/admin/login` : 관리자 로그인
+- `/admin` : 통계 대시보드
+
+## 4. 문항 수정
+
+Supabase > Table Editor > `dilemmas`에서 title, scenario, option_a, option_b를 수정합니다.
+참여자 화면에는 `is_active = true`인 문항 중 order_no 순서로 정확히 3개가 표시됩니다.
+현재 제출 RPC는 정확히 3개의 활성 문항을 요구합니다.
+
+## 5. GitHub 및 Vercel 배포
+
+1. GitHub에 새 저장소 생성
+2. 프로젝트 폴더에서 `git init`, `git add .`, `git commit` 후 GitHub 저장소로 push
+3. Vercel에서 해당 GitHub 저장소 Import
+4. Vercel Project Settings > Environment Variables에 다음 값 등록
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+5. Deploy
+
+환경변수 변경 후에는 재배포해야 적용됩니다.
+
+## 6. 보안 및 개인정보 안내
+
+- 이름, 이메일 등 직접 식별정보는 수집하지 않습니다.
+- 연령과 성별도 개인정보 또는 민감한 맥락의 정보가 될 수 있으므로 연구 목적, 보관 기간, 이용 안내 및 동의 절차를 별도로 검토하세요.
+- 익명 설문이라도 IP 등 인프라 로그가 전혀 수집되지 않는다는 뜻은 아닙니다.
+- 공개 anon key는 브라우저에 노출되는 것이 정상이며, 실제 보안은 RLS와 RPC 검증에 의존합니다.
+- 관리자 계정에 강력한 비밀번호와 MFA를 권장합니다.
+- 관리자 통계는 `app_metadata.role = admin` 사용자만 읽을 수 있습니다.
+
+## 7. 제한 사항
+
+- 관리자 권한 부여/회수는 Supabase Dashboard에서 수행합니다.
+- 대시보드 필터는 연령대(전체, 10대 이하, 20대, 30대, 40대, 50대 이상)와 성별 기준입니다.
+- 통계는 관리자 로그인 후 Supabase에서 실시간 조회합니다.
